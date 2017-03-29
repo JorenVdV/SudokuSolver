@@ -32,12 +32,11 @@ def main():
     for arg in args:
         try:
             sudoku = process(arg)
-            sudoku.print()
+            # sudoku.print()
             sudoku.solve(False)
             sudoku.print()
         except Exception as error:
             print (error)
-    # print sudoku
 
 if __name__ == "__main__":
     main()

@@ -14,7 +14,8 @@ class Sudoku:
         self.__values = list(range(1, self.__size+1))
 
     def print(self):
-        print(self.__smatrix)
+        for row in self.__smatrix:
+            print(row)
 
     def solve(self, complex: bool):
         if not complex:
@@ -22,16 +23,19 @@ class Sudoku:
             has_options = True
             while not self.__solved() and has_changed:
 
-                newmatrix = deepcopy(self.__smatrix)
                 has_changed = False
 
                 for row in range(0, self.__size):
                     for column in range(0, self.__size):
                         if self.__smatrix[row][column] == -1:
                             options = self.__solve_element(row, column)
+
                             if len(options) == 1:
+                                self.__smatrix[row][column] = options[0]
                                 has_changed = True
-                                newmatrix[row][column] = options[0]
+                                # print('=========================================UPDATE============================================')
+                                # print("({},{}) = {}".format(row, column, options[0]))
+                                # self.print()
 
                             elif len(options) == 0:
                                 has_options = False
@@ -43,17 +47,18 @@ class Sudoku:
                     if not has_options:
                         break
 
-                self.__smatrix = newmatrix
-
-            if self.__solved():
-                return
             if not self.__solved() and has_options:
-                 self.__solve_with_guess()
+                self.__solve_with_guess()
+
+            elif self.__solved():
+                return
+
             else:
-                raise Exception("Sudoku cannot be solved")
+                # self.print()
+                raise Exception("Sudoku cannot be solved, without guess")
 
     def __solve_with_guess(self):
-        oldmatrix = self.__smatrix
+        oldmatrix = deepcopy(self.__smatrix)
         for row in range(0, self.__size):
             for column in range(0, self.__size):
                 if self.__smatrix[row][column] == -1:
@@ -68,6 +73,7 @@ class Sudoku:
                             self.__smatrix = oldmatrix
 
                     if not self.__solved():
+                        # self.print()
                         raise Exception("Sudoku cannot be solved")
 
     def __solve_element(self, row: int, column: int) -> [int]:
@@ -75,11 +81,14 @@ class Sudoku:
                 if x in self.__column_options(column) and x in self.__block_options(row, column)]
 
     def __row_options(self, row: int) -> [int]:
-        return [x for x in self.__values if x not in self.__smatrix[row]]
+        rowvalues = self.__smatrix[row]
+        return [x for x in self.__values
+                if x not in rowvalues]
 
     def __column_options(self, column:int) -> [int]:
         columnvalues = [self.__smatrix[row][column] for row in range(0, self.__size)]
-        return [x for x in self.__values if x not in columnvalues]
+        return [x for x in self.__values
+                if x not in columnvalues]
 
     def __block_options(self, row:int, column:int)-> [int]:
         blockvalues = []
