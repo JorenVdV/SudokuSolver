@@ -1,6 +1,6 @@
 from functools import reduce
-from math import sqrt, floor, ceil
-
+from math import sqrt, floor
+from copy import deepcopy
 
 
 class Sudoku:
@@ -13,24 +13,62 @@ class Sudoku:
         self.__blocksize = int(sqrt(self.__size))
         self.__values = list(range(1, self.__size+1))
 
+    def print(self):
+        print(self.__smatrix)
+
     def solve(self, complex: bool):
         if not complex:
             has_changed = True
+            has_options = True
             while not self.__solved() and has_changed:
-                newmatrix = []
+
+                newmatrix = deepcopy(self.__smatrix)
                 has_changed = False
+
                 for row in range(0, self.__size):
-                    newmatrix.append([])
                     for column in range(0, self.__size):
-                        if self.__smatrix[row][column] != -1:
-                            newmatrix[row].append(self.__smatrix[row][column])
-                        else:
+                        if self.__smatrix[row][column] == -1:
                             options = self.__solve_element(row, column)
                             if len(options) == 1:
-                                newmatrix[row].append(options[0])
-                            else:
-                                newmatrix[row].append(-1)
+                                has_changed = True
+                                newmatrix[row][column] = options[0]
 
+                            elif len(options) == 0:
+                                has_options = False
+                                break
+
+                            elif len(options) > 1:
+                                has_options = True
+
+                    if not has_options:
+                        break
+
+                self.__smatrix = newmatrix
+
+            if self.__solved():
+                return
+            if not self.__solved() and has_options:
+                 self.__solve_with_guess()
+            else:
+                raise Exception("Sudoku cannot be solved")
+
+    def __solve_with_guess(self):
+        oldmatrix = self.__smatrix
+        for row in range(0, self.__size):
+            for column in range(0, self.__size):
+                if self.__smatrix[row][column] == -1:
+                    options = self.__solve_element(row, column)
+                    for option in options:
+                        try:
+                            self.__smatrix[row][column] = option
+                            self.solve(False) # if this is not the right option it will raise an exception
+                            if self.__solved(): # could be left out, I think
+                                return
+                        except Exception as error:
+                            self.__smatrix = oldmatrix
+
+                    if not self.__solved():
+                        raise Exception("Sudoku cannot be solved")
 
     def __solve_element(self, row: int, column: int) -> [int]:
         return [x for x in self.__row_options(row)

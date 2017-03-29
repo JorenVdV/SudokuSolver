@@ -27,13 +27,14 @@ def main():
         if o in ("-h", "--help"):
             print ('type the path to a file')
             sys.exit(0)
+
     # solve sudoku
     for arg in args:
         try:
             sudoku = process(arg)
-            print("sudoku to solve:".format(sudoku))
+            sudoku.print()
             sudoku.solve(False)
-            # print(sudoku._smatrix)
+            sudoku.print()
         except Exception as error:
             print (error)
     # print sudoku
