@@ -1,7 +1,6 @@
 from functools import reduce
 from math import sqrt, floor
 from copy import deepcopy
-from constraint import *
 
 
 class Sudoku:
@@ -18,20 +17,6 @@ class Sudoku:
     def print(self):
         for row in self.__smatrix:
             print(row)
-
-    def solve_constraint(self):
-        sudoku = Problem()
-
-        rows = range(self.__size)
-        cols = range(self.__size)
-
-        board = [(row, col) for row in rows for col in cols]
-        sudoku.addVariables(board, range(1, self.__size*self.__size+1))
-
-        # for row in rows:
-        #     for col in cols:
-        #         if self.__smatrix[row][col] != 0:
-
 
     def solve(self, complex: bool):
         if not complex:
