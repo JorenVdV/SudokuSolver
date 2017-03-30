@@ -12,10 +12,14 @@ class Sudoku:
         self.__size = len(self.__smatrix)
         self.__blocksize = int(sqrt(self.__size))
         self.__values = list(range(1, self.__size+1))
+        self.__oldmatrix = []
 
     def print(self):
         for row in self.__smatrix:
             print(row)
+
+    def solve_cosntraint():
+        print('constraint solving')
 
     def solve(self, complex: bool):
         if not complex:
@@ -58,19 +62,19 @@ class Sudoku:
                 raise Exception("Sudoku cannot be solved, without guess")
 
     def __solve_with_guess(self):
-        oldmatrix = deepcopy(self.__smatrix)
         for row in range(0, self.__size):
             for column in range(0, self.__size):
                 if self.__smatrix[row][column] == -1:
                     options = self.__solve_element(row, column)
                     for option in options:
                         try:
+                            self.__oldmatrix.append(deepcopy(self.__smatrix))
                             self.__smatrix[row][column] = option
                             self.solve(False) # if this is not the right option it will raise an exception
                             if self.__solved(): # could be left out, I think
                                 return
                         except Exception as error:
-                            self.__smatrix = oldmatrix
+                            self.__smatrix = self.__oldmatrix.pop()
 
                     if not self.__solved():
                         # self.print()
