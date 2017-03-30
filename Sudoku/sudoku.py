@@ -1,21 +1,37 @@
 from functools import reduce
 from math import sqrt, floor
 from copy import deepcopy
+from constraint import *
 
 
 class Sudoku:
     def __init__(self, stringlist):
-        stringlist_cleaned_split = [string.replace("\n","").replace("x", "-1").split(",") for string in stringlist]
+        stringlist_cleaned_split = [string.replace("\n","").replace("x", "0").split(",") for string in stringlist]
         self.__smatrix = [[int(string) for string in string_split]for string_split in stringlist_cleaned_split]
         if sqrt(len(self.__smatrix)) != floor(sqrt(len(self.__smatrix))):
-            raise Exception()
+            raise Exception("Check input matrix!")
         self.__size = len(self.__smatrix)
         self.__blocksize = int(sqrt(self.__size))
         self.__values = list(range(1, self.__size+1))
+        self.__oldmatrix = []
 
     def print(self):
         for row in self.__smatrix:
             print(row)
+
+    def solve_constraint(self):
+        sudoku = Problem()
+
+        rows = range(self.__size)
+        cols = range(self.__size)
+
+        board = [(row, col) for row in rows for col in cols]
+        sudoku.addVariables(board, range(1, self.__size*self.__size+1))
+
+        # for row in rows:
+        #     for col in cols:
+        #         if self.__smatrix[row][col] != 0:
+
 
     def solve(self, complex: bool):
         if not complex:
@@ -27,7 +43,7 @@ class Sudoku:
 
                 for row in range(0, self.__size):
                     for column in range(0, self.__size):
-                        if self.__smatrix[row][column] == -1:
+                        if self.__smatrix[row][column] == 0:
                             options = self.__solve_element(row, column)
 
                             if len(options) == 1:
@@ -58,19 +74,19 @@ class Sudoku:
                 raise Exception("Sudoku cannot be solved, without guess")
 
     def __solve_with_guess(self):
-        oldmatrix = deepcopy(self.__smatrix)
         for row in range(0, self.__size):
             for column in range(0, self.__size):
-                if self.__smatrix[row][column] == -1:
+                if self.__smatrix[row][column] == 0:
                     options = self.__solve_element(row, column)
                     for option in options:
                         try:
+                            self.__oldmatrix.append(deepcopy(self.__smatrix))
                             self.__smatrix[row][column] = option
                             self.solve(False) # if this is not the right option it will raise an exception
                             if self.__solved(): # could be left out, I think
                                 return
                         except Exception as error:
-                            self.__smatrix = oldmatrix
+                            self.__smatrix = self.__oldmatrix.pop()
 
                     if not self.__solved():
                         # self.print()
@@ -98,6 +114,6 @@ class Sudoku:
         return [x for x in self.__values if x not in blockvalues]
 
     def __solved(self):
-        solved_rows = [len(list(filter(lambda smatrix_element: smatrix_element == -1, smatrix_row)))==0 for smatrix_row in
+        solved_rows = [len(list(filter(lambda smatrix_element: smatrix_element == 0, smatrix_row)))==0 for smatrix_row in
                 self.__smatrix]
         return reduce(lambda a, b: a and b, solved_rows, True)
